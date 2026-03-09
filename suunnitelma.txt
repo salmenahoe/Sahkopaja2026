@@ -1,0 +1,25 @@
+arduinon äänentunnistus on ???? (rasberrypie?)
+  --> ohjelmointi
+
+Liikkuva osa: hieluva käsi sivusta sivuun
+  --> moottori ja ohjelmointi
+
+3D-printtaus
+
+Ulkonäkö
+  - pinkkii ja glitterii
+
+Tarvittavat materiaalit ja muut:
+  - äänentunnistuslaite
+  - moottori
+  - ulkokuori
+  - mahdolliset tuet sisälle?
+  - akselit?
+
+Tehtävät asiat:
+1. selvitä äänentunnistus
+2. selvitä moottori
+3. koodaa koodit (joku muu ku Kaisa)
+4. suunnittele 3D
+5. printtaa 3D
+6. kasaa
