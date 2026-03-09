@@ -1,0 +1,39 @@
+ChatGPT ehdotus koodille ilman RasberryPi
+
+import time
+import pyaudio
+import json
+import vosk
+import sys
+
+# Try Raspberry Pi hardware
+try:
+    import RPi.GPIO as GPIO
+    from adafruit_servokit import ServoKit
+    HARDWARE_AVAILABLE = True
+    print("Running on Raspberry Pi hardware")
+
+except Exception as e:
+    print("Hardware not available, running in simulation mode:", e)
+    HARDWARE_AVAILABLE = False
+
+    class DummyServo:
+        def __init__(self):
+            self.angle = 90
+
+    class DummyKit:
+        def __init__(self, channels):
+            self.servo = [DummyServo() for _ in range(channels)]
+
+    class DummyGPIO:
+        BCM = None
+        def setmode(self, mode): pass
+        def cleanup(self): pass
+
+    GPIO = DummyGPIO()
+    ServoKit = DummyKit
+
+from ultralytics import YOLO
+import cv2
+import pyttsx3
+import threading
