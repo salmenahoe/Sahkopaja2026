@@ -13,12 +13,7 @@ DEBUG_MODE = True
 kit = ServoKit(channels=16)
 
 # Servo Pin Assignments
-BASE_SERVO = 0
 SHOULDER_SERVO = 1
-ELBOW_SERVO = 2
-WRIST_ROTATION_SERVO = 3
-WRIST_TILT_SERVO = 4
-GRIPPER_SERVO = 5
 
 # GPIO Setup
 GPIO.setmode(GPIO.BCM)
@@ -54,15 +49,10 @@ def smooth_move(servo_index, target_angle, delay=0.01):
         kit.servo[servo_index].angle = angle
         time.sleep(delay)
 
-# Move Arm Function
-def move_arm(base_angle, shoulder_angle, elbow_angle, wrist_rotate_angle, wrist_tilt_angle, gripper_angle):
-    smooth_move(BASE_SERVO, base_angle)
-    smooth_move(SHOULDER_SERVO, shoulder_angle)
-    smooth_move(ELBOW_SERVO, elbow_angle)
-    smooth_move(WRIST_ROTATION_SERVO, wrist_rotate_angle)
-    smooth_move(WRIST_TILT_SERVO, wrist_tilt_angle)
-    smooth_move(GRIPPER_SERVO, gripper_angle)
-    debug_log(f"Arm Moved -> Base: {base_angle}, Shoulder: {shoulder_angle}, Elbow: {elbow_angle}, Wrist Rotate: {wrist_rotate_angle}, Wrist Tilt: {wrist_tilt_angle}, Gripper: {gripper_angle}")
+# Move Shoulder Function
+def move_shoulder(angle):
+    smooth_move(SHOULDER_SERVO, angle)
+    debug_log(f"Shoulder moved to {angle}")
 
 # Voice Command Function
 def get_command():
@@ -84,6 +74,7 @@ def parse_command(text):
         name = text.replace("load preset", "").strip()
         return "load_preset", {"name": name}
 
+
     COMMANDS = {
         "pick up {color1} and put over {color2}": "pick_place",
         "rotate {color} 90 degrees": "rotate",
@@ -99,6 +90,8 @@ def parse_command(text):
             if "red" in text or "blue" in text:
                 color = "red" if "red" in text else "blue"
                 return action, {"color": color}
+
+
     return None, {}
 
 
@@ -120,69 +113,48 @@ motion_presets = load_config()
 # Main Loop
 while True:
     command = get_command()
-    action, params = parse_command(command)
 
-    if not action:
-        speak("Sorry, I didn't understand.")
+    if command =="":
         continue
 
-    if action == "save_preset":
-        name = params["name"]
-        motion_presets[name] = {
-            "base": kit.servo[BASE_SERVO].angle or 90,
-            "shoulder": kit.servo[SHOULDER_SERVO].angle or 90,
-            "elbow": kit.servo[ELBOW_SERVO].angle or 90,
-            "wrist_rotate": kit.servo[WRIST_ROTATION_SERVO].angle or 90,
-            "wrist_tilt": kit.servo[WRIST_TILT_SERVO].angle or 90,
-            "gripper": kit.servo[GRIPPER_SERVO].angle or 90
-        }
-        save_config(motion_presets)
-        speak(f"Preset {name} saved.")
-        continue
-
-    if action == "load_preset":
-        name = params["name"]
-        if name in motion_presets:
-            preset = motion_presets[name]
-            move_arm(preset["base"], preset["shoulder"], preset["elbow"], preset["wrist_rotate"], preset["wrist_tilt"], preset["gripper"])
-            speak(f"Loaded preset {name}.")
-        else:
-            speak(f"Preset {name} not found.")
-        continue
-
-    speak(f"Executing {action} for {params}")
-
-    if action == "pick_place":
-        move_arm(90, 60, 30, 0, 0, 0)
-        time.sleep(1)
-        move_arm(90, 60, 30, 0, 0, 30)
-        time.sleep(1)
-        move_arm(120, 30, 0, 0, 0, 30)
-        time.sleep(1)
-        move_arm(120, 30, 0, 0, 0, 0)
-        speak("Task Completed")
-
-    elif action == "parallel":
-        move_arm(90, 50, 20, 0, 0, 30)
-        time.sleep(1)
-        move_arm(90, 50, 20, 0, 0, 0)
-        speak("Cubes placed parallel")
-
-    elif action == "rotate":
-        move_arm(90, 60, 30, 0, 0, 30)
-        time.sleep(1)
-        move_arm(90, 60, 30, 90, 0, 30)
-        time.sleep(1)
-        move_arm(90, 60, 30, 90, 0, 0)
-        speak("Rotation complete")
-
-    elif "exit" in command:
+    if "exit" in command:
         speak("Shutting down")
         break
+
+    if "up" in command:
+        move_shoulder(120)
+        speak("Shoulder up")
+
+    elif "down" in command:
+        move_shoulder(60)
+        speak("Shoulder down")
+
+    elif "center" in command:
+        move_shoulder(90)
+        speak("Center position")
+
+    elif command.startswith("save preset"):
+        name = command.replace("save preset", "").strip()
+
+        motion_presets[name] = {
+            "shoulder": kit.servo[SHOULDER_SERVO].angle or 90
+        }
+
+        save_config(motion_presets)
+        speak(f"Preset {name} saved")
+
+    elif command.startswith("load preset"):
+        name = command.replace("load preset", "").strip()
+
+        if name in motion_presets:
+            angle = motion_presets[name]["shoulder"]
+            move_shoulder(angle)
+            speak(f"Loaded preset {name}")
+        else:
+            speak("Preset not found")
 
 # Cleanup
 stream.stop_stream()
 stream.close()
 p.terminate()
 GPIO.cleanup()
-
