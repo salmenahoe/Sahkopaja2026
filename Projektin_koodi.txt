@@ -1,5 +1,4 @@
-Amanda ja Elina
-
+Amanda ja Elina kirjoittaa koodin
 
 
 https://github.com/M4YH3M-DEV/6-DOF-Voice-Controlled-Robotic-Arm
