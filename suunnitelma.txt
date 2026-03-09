@@ -10,6 +10,7 @@ Ulkonäkö
   - pinkkii ja glitterii
 
 Tarvittavat materiaalit ja muut:
+  - Raspberry pi
   - äänentunnistuslaite
   - moottori
   - ulkokuori
