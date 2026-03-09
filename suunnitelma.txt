@@ -1,4 +1,4 @@
-arduinon äänentunnistus on ???? (rasberrypie?)
+arduinon äänentunnistus on ???? (rasberrypi?)
   --> ohjelmointi
 
 Liikkuva osa: hieluva käsi sivusta sivuun
@@ -8,6 +8,8 @@ Liikkuva osa: hieluva käsi sivusta sivuun
 
 Ulkonäkö
   - pinkkii ja glitterii
+  - lego-ukko
+--> huomioitava koko. mahtuuko kaikki sisälle?
 
 Tarvittavat materiaalit ja muut:
   - Raspberry pi
@@ -20,7 +22,8 @@ Tarvittavat materiaalit ja muut:
 Tehtävät asiat:
 1. selvitä äänentunnistus
 2. selvitä moottori
-3. koodaa koodit (joku muu ku Kaisa)
-4. suunnittele 3D
-5. printtaa 3D
-6. kasaa
+3. selvitä onko akku vai virtajohto
+4. koodaa koodit (joku muu ku Kaisa)
+5. suunnittele 3D
+6. printtaa 3D
+7. kasaa
