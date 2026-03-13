@@ -1,0 +1,100 @@
+import time
+
+# --- TESTAUSASETUKSET (WINDOWS) ---
+DEBUG_MODE = True
+SHOULDER_SERVO = 1
+
+
+# Simuloidaan ServoKit-luokka, jotta koodi ei anna erroria Windowsilla
+class MockServo:
+    def __init__(self):
+        self.angle = 90  # Aloitusasento keskellä
+
+
+class MockKit:
+    def __init__(self):
+        self.servo = {SHOULDER_SERVO: MockServo()}
+
+
+# Alustetaan simuloitu moottoriohjain
+kit = MockKit()
+
+
+# --- FUNKTIOT ---
+
+def debug_log(message):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {message}")
+
+
+def smooth_move(servo_index, target_angle, delay=0.01):
+    """Simuloi pehmeää liikettä tulostamalla askeleet"""
+    # Haetaan nykyinen kulma simuloidusta servosta
+    current_angle = kit.servo[servo_index].angle
+
+    print(f"\n>>> MOOTTORI ALKAA LIIKKUA: {current_angle}° -> {target_angle}°")
+
+    step = 1 if target_angle > current_angle else -1
+
+    # Käydään kulmat läpi (simuloidaan liikettä)
+    for angle in range(int(current_angle), int(target_angle) + step, step):
+        kit.servo[servo_index].angle = angle
+        # Tulostetaan vain 10 asteen välein, ettei tekstiä tule liikaa
+        if angle % 10 == 0 or angle == target_angle:
+            print(f"  [Servo {servo_index}] asento: {angle}°")
+        time.sleep(delay)
+
+    print(f">>> MOOTTORI SAAVUTTI KOHTEEN: {target_angle}°\n")
+
+
+def get_command():
+    """Korvaa mikrofonin näppäimistösyötteellä"""
+    print("-" * 30)
+    user_input = input("KIRJOITA KOMENTO (esim. 'magic' tai 'lopeta'): ").lower().strip()
+    if user_input:
+        debug_log(f"Tunnistettu syöte: '{user_input}'")
+        return user_input
+    return ""
+
+
+# --- PÄÄSILMUKKA ---
+
+debug_log("Windows-testitila käynnistetty. Logiikka on valmis.")
+
+# Alkutilan asetus keskelle (simuloitu)
+smooth_move(SHOULDER_SERVO, 90)
+
+HAND_COMMANDS = ["magic"]
+EXIT_COMMANDS = ["lopeta", "exit"]
+
+while True:
+    # get_command odottaa nyt näppäimistöä
+    command = get_command()
+
+    if command == "":
+        continue
+
+    # Tarkistetaan exit-komento
+    if any(word in command for word in EXIT_COMMANDS):
+        print("Sammutetaan simulaatio...")
+        break
+
+    # Tarkistetaan magic-komento (heilautus)
+    elif any(word in command for word in HAND_COMMANDS):
+        debug_log("Suoritetaan 'magic'-liikesarja")
+
+        # Keski -> Ylös
+        smooth_move(SHOULDER_SERVO, 120)
+        time.sleep(0.5)
+
+        # Ylös -> Alas
+        smooth_move(SHOULDER_SERVO, 60)
+        time.sleep(0.5)
+
+        # Alas -> Takaisin keskelle
+        smooth_move(SHOULDER_SERVO, 90)
+
+        debug_log("Liikesarja valmis (Valmis)")
+
+# Cleanup (simuloitu)
+print("Cleanup suoritettu. Ohjelma päättyi onnistuneesti.")
