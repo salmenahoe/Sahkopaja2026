@@ -1,10 +1,15 @@
-arduinon äänentunnistus on ???? (rasberrypi?)
-  --> ohjelmointi
+arduinon äänentunnistus on raspberry pi:lla
+  --> ohjelmointi (koodia tehty) 
 
-Liikkuva osa: hieluva käsi sivusta sivuun
+Liikkuva osa: hieluva käsi ylhäältä alas
   --> moottori ja ohjelmointi
 
+Muut mietinnät:
+  - Kuumeneeko Raspberry Pi - miten ottaa tämän huomioon?
+
 3D-printtaus
+  - Legoukon sisään Raspberry Pi, moottori
+  - Ulostulokäytävä virtajohdolle
 
 Ulkonäkö
   - pinkkii ja glitterii
@@ -18,12 +23,12 @@ Tarvittavat materiaalit ja muut:
   - ulkokuori
   - mahdolliset tuet sisälle?
   - akselit?
+  - virtajohto
 
 Tehtävät asiat:
-1. selvitä äänentunnistus
+1. selvitä äänentunnistus (tarvitaan mikrofoni, kuinka herkästi tunnistaa äänen)
 2. selvitä moottori
-3. selvitä onko akku vai virtajohto
-4. koodaa koodit (joku muu ku Kaisa)
-5. suunnittele 3D
+4. koodaa koodit
+5. suunnittele 3D (kuinka paksu printti, että mikrofoni tunnistaa)
 6. printtaa 3D
 7. kasaa
