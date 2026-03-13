@@ -1,0 +1,86 @@
+import time
+import pyaudio
+import json
+import vosk
+import RPi.GPIO as GPIO
+from adafruit_servokit import ServoKit
+
+# Debug Mode Toggle
+DEBUG_MODE = True
+
+# ServoKit Setup
+kit = ServoKit(channels=16)
+
+# Servo Pin Assignments
+SHOULDER_SERVO = 1
+
+# GPIO Setup
+GPIO.setmode(GPIO.BCM)
+
+# Vosk Voice Recognition Setup
+model_path = "vosk-model-small-en-us-0.15"
+samplerate = 16000
+chunk_size = 1024
+vosk_model = vosk.Model(model_path)
+rec = vosk.KaldiRecognizer(vosk_model, samplerate)
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True, frames_per_buffer=chunk_size)
+stream.start_stream()
+
+HAND_COMMANDS = ["magic"]
+EXIT_COMMANDS = ["lopeta"]
+
+
+# Debug Function
+def debug_log(message):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {message}")
+
+# Smooth Servo Movement
+def smooth_move(servo_index, target_angle, delay=0.05):
+    current_angle = kit.servo[servo_index].angle or 90
+    step = 1 if target_angle > current_angle else -1
+    for angle in range(int(current_angle), int(target_angle) + step, step):
+        kit.servo[servo_index].angle = angle
+        time.sleep(delay)
+
+
+# Voice Command Function
+def get_command():
+    debug_log("Listening for command...")
+    while True:
+        data = stream.read(chunk_size, exception_on_overflow=False)
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())
+            command = result.get("text", "").lower()
+            if command:
+                debug_log(f"Detected Command: {command}")
+                return command
+
+# Main Loop
+smooth_move(SHOULDER_SERVO,90)
+
+while True:
+    command = get_command()
+
+    if command =="":
+        continue
+
+    if any(word in command for word in EXIT_COMMANDS):
+        break
+
+    elif any(word in command for word in HAND_COMMANDS):
+        smooth_move(SHOULDER_SERVO,120)
+        time.sleep(0.5)
+        smooth_move(SHOULDER_SERVO,60)
+        time.sleep(0.5)
+        smooth_move(SHOULDER_SERVO,90)
+
+        debug_log("Valmis")
+
+# Cleanup
+stream.stop_stream()
+stream.close()
+p.terminate()
+GPIO.cleanup()
