@@ -1,0 +1,83 @@
+import time
+import pyaudio
+import json
+import vosk
+import RPi.GPIO as GPIO
+
+# Debug Mode Toggle
+DEBUG_MODE = True
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11, GPIO.OUT)
+
+pwm=GPIO.PWM(11, 50)
+pwm.start(0)
+
+# Servo Pin Assignments
+SHOULDER_SERVO = 1
+
+# Vosk Voice Recognition Setup
+model_path = "vosk-model-small-en-us-0.15"
+samplerate = 16000
+chunk_size = 1024
+vosk_model = vosk.Model(model_path)
+rec = vosk.KaldiRecognizer(vosk_model, samplerate)
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True, frames_per_buffer=chunk_size)
+stream.start_stream()
+
+HAND_COMMANDS = ["magic"]
+EXIT_COMMANDS = ["lopeta"]
+
+
+# Debug Function
+def debug_log(message):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {message}")
+
+#Servo movement
+def smooth_move():
+    pwm.ChangeDutyCycle(5) # left -90 deg position
+    time.sleep(1)
+    pwm.ChangeDutyCycle(7.5) # neutral position
+    time.sleep(1)
+    pwm.ChangeDutyCycle(10) # right +90 deg position
+    time.sleep(1)
+
+
+# Voice Command Function
+def get_command():
+    debug_log("Listening for command...")
+    while True:
+        data = stream.read(chunk_size, exception_on_overflow=False)
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())
+            command = result.get("text", "").lower()
+            if command:
+                debug_log(f"Detected Command: {command}")
+                return command
+
+
+# Main Loop
+smooth_move()
+
+while True:
+    command = get_command()
+
+    if command == "":
+        continue
+
+    if any(word in command for word in EXIT_COMMANDS):
+        break
+
+    elif any(word in command for word in HAND_COMMANDS):
+        smooth_move()
+        time.sleep(0.5)
+        debug_log("Valmis")
+
+# Cleanup
+stream.stop_stream()
+stream.close()
+p.terminate()
+GPIO.cleanup()
