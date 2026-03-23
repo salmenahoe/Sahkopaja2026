@@ -17,7 +17,7 @@ pwm.start(0)
 SHOULDER_SERVO = 1
 
 # Vosk Voice Recognition Setup
-model_path = "vosk-model-small-en-us-0.15"
+model_path = "/home/batman/vosk-model-small-en-us-0.15"
 samplerate = 16000
 chunk_size = 1024
 vosk_model = vosk.Model(model_path)
