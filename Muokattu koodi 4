@@ -1,0 +1,102 @@
+import time
+import pyaudio
+import json
+import vosk
+import RPi.GPIO as GPIO
+
+# Debug Mode Toggle
+DEBUG_MODE = True
+
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(11, GPIO.OUT)
+
+pwm=GPIO.PWM(11, 50)
+pwm.start(0)
+
+# Servo Pin Assignments
+SHOULDER_SERVO = 1
+
+# Vosk Voice Recognition Setup
+model_path = "/home/batman/vosk-model-small-en-us-0.15"
+samplerate = 16000
+chunk_size = 1024
+vosk_model = vosk.Model(model_path)
+rec = vosk.KaldiRecognizer(vosk_model, samplerate)
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True, frames_per_buffer=chunk_size)
+stream.start_stream()
+
+HAND_COMMANDS = ["magic"]
+EXIT_COMMANDS = ["lopeta"]
+
+
+# Debug Function
+def debug_log(message):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {message}")
+
+def angle_to_duty(angle):
+    return 2.5 + (angle / 180.0) * 10
+
+
+def move_slow(start, end, step=1, delay=0.02):
+    if start < end:
+        angle_range = range(start, end + 1, step)
+    else:
+        angle_range = range(start, end - 1, -step)
+
+    for angle in angle_range:
+        pwm.ChangeDutyCycle(angle_to_duty(angle))
+        time.sleep(delay)
+
+
+def smooth_move():
+    debug_log("Liike alkaa")
+
+    move_slow(90, 120)
+    time.sleep(0.3)
+
+    move_slow(120, 60)
+    time.sleep(0.3)
+
+    move_slow(60, 90)
+    time.sleep(0.3)
+
+    pwm.ChangeDutyCycle(0)
+
+    debug_log("Liike valmis")
+
+
+# Voice Command Function
+def get_command():
+    debug_log("Listening for command...")
+    while True:
+        data = stream.read(chunk_size, exception_on_overflow=False)
+        if rec.AcceptWaveform(data):
+            result = json.loads(rec.Result())
+            command = result.get("text", "").lower()
+            if command:
+                debug_log(f"Detected Command: {command}")
+                return command
+
+
+while True:
+    command = get_command()
+
+    if command == "":
+        continue
+
+    if any(word in command for word in EXIT_COMMANDS):
+        break
+
+    elif any(word in command for word in HAND_COMMANDS):
+        smooth_move()
+        time.sleep(0.5)
+        debug_log("Valmis")
+
+# Cleanup
+stream.stop_stream()
+stream.close()
+p.terminate()
+GPIO.cleanup()
