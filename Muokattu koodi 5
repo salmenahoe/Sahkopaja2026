@@ -50,7 +50,7 @@ def set_angle(angle):
 
 
 def move_slow(start, end, step=1, delay=0.02):
-    debug(f"Move {start} -> {end}")
+    debug_log(f"Move {start} -> {end}")
 
     if start < end:
         angles = range(start, end + 1, step)
@@ -66,7 +66,7 @@ def move_slow(start, end, step=1, delay=0.02):
 
 
 def smooth_move():
-    debug("Liike alkaa")
+    debug_log("Liike alkaa")
 
     move_slow(90, 120)
     time.sleep(0.3)
@@ -77,7 +77,7 @@ def smooth_move():
     move_slow(60, 90)
     time.sleep(0.3)
 
-    debug("Liike valmis")
+    debug_log("Liike valmis")
 
 # Voice Command Function
 def get_command():
@@ -93,7 +93,7 @@ def get_command():
 
 
 # Chekkaa että alkuasento on 90 astetta
-debug("Asetetaan alkuasento")
+debug_log("Asetetaan alkuasento")
 set_angle(90)
 time.sleep(0.5)
 pwm.ChangeDutyCycle(0)
