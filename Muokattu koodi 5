@@ -28,7 +28,7 @@ stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True,
 stream.start_stream()
 
 HAND_COMMANDS = ["magic"]
-EXIT_COMMANDS = ["lopeta"]
+EXIT_COMMANDS = ["stop", "exit"]
 
 
 # Debug Function
@@ -39,7 +39,7 @@ def debug_log(message):
 # Servon liikkeet
 def angle_to_duty(angle):
     # Turvallinen rajaus
-    angle = max(MIN_ANGLE, min(MAX_ANGLE, angle))
+    angle = max(10, min(170, angle))
     return 3 + (angle / 180.0) * 9
 
 
@@ -93,8 +93,9 @@ def get_command():
 
 
 # Chekkaa että alkuasento on 90 astetta
-pwm.ChangeDutyCycle(angle_to_duty(90))
-time.sleep(1)
+debug("Asetetaan alkuasento")
+set_angle(90)
+time.sleep(0.5)
 pwm.ChangeDutyCycle(0)
 
 
