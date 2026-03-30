@@ -1,5 +1,5 @@
 arduinon äänentunnistus on raspberry pi:lla
-  --> ohjelmointi (koodia tehty) 
+  --> ohjelmointi (koodi tehty)
 
 Liikkuva osa: hieluva käsi ylhäältä alas
   --> moottori ja ohjelmointi
@@ -30,8 +30,10 @@ Tarvittavat materiaalit ja muut:
 
 Tehtävät asiat:
 1. selvitä äänentunnistus (tarvitaan mikrofoni, kuinka herkästi tunnistaa äänen)
+  - TOIMII
 2. selvitä moottori
 4. koodaa koodit
+  - VALMIS
 5. suunnittele 3D (kuinka paksu printti, että mikrofoni tunnistaa)
 6. printtaa 3D
 7. kasaa
