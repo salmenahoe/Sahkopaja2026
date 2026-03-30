@@ -1,0 +1,6 @@
+source my-venv/bin/activate 
+ls
+cd my-venv
+ls
+cd bin
+python *tiedoston nimi*
