@@ -1,3 +1,4 @@
+#Ladataan tarvittavat kirjastot
 import time
 import pyaudio
 import json
@@ -7,6 +8,7 @@ import RPi.GPIO as GPIO
 # Debug Mode Toggle
 DEBUG_MODE = True
 
+# Asetetaan Raspberry Pi:n signaali pin
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(11, GPIO.OUT)
 
@@ -16,7 +18,7 @@ pwm.start(0)
 # Servo Pin Assignments
 SHOULDER_SERVO = 1
 
-# Vosk Voice Recognition Setup
+# Äänentunnistuksen setup
 model_path = "/home/batman/vosk-model-small-en-us-0.15"
 samplerate = 16000
 chunk_size = 1024
@@ -27,6 +29,7 @@ p = pyaudio.PyAudio()
 stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True, frames_per_buffer=chunk_size)
 stream.start_stream()
 
+# Asetetaan komennot joita äänentunnisus kuuntelee ja tottelee
 HAND_COMMANDS = ["magic"]
 EXIT_COMMANDS = ["stop", "exit"]
 
@@ -79,7 +82,7 @@ def smooth_move():
 
     debug_log("Liike valmis")
 
-# Voice Command Function
+# Äänen muuttaminen tekstiksi ja komentojen tunnistaminen
 def get_command():
     debug_log("Listening for command...")
     while True:
@@ -105,9 +108,10 @@ while True:
     if command == "":
         continue
 
+# Jos tunnistaa komentosanan lopettamiselle, niin tämä (kuunteleminen loppuu)
     if any(word in command for word in EXIT_COMMANDS):
         break
-
+# Jos tunnistaa komentosanan liikkeelle, niin tämä
     elif any(word in command for word in HAND_COMMANDS):
         smooth_move()
         time.sleep(0.5)
