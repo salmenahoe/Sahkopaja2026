@@ -1,0 +1,125 @@
+#Ladataan tarvittavat kirjastot
+import time
+import pyaudio
+import speech_recognition as sr
+from gpiozero.pins.lgpio import LGPIOFactory
+from gpiozero import Device
+from gpiozero import AngularServo
+
+Device.pin_factory = LGPIOFactory()
+
+# Debug Mode Toggle
+DEBUG_MODE = True
+
+# Asetetaan Raspberry Pi:n signaali pin
+servo = AngularServo(
+    17,  # physical pin 11
+    min_angle=0,
+    max_angle=180,
+    min_pulse_width=0.0005,
+    max_pulse_width=0.0025
+)
+
+# Servo Pin Assignments
+SHOULDER_SERVO = 1
+samplerate = 16000
+chunk_size = 1024
+# Äänentunnistuksen setup
+recognizer = sr.Recognizer()
+mic = sr.Microphone()
+
+p = pyaudio.PyAudio()
+stream = p.open(format=pyaudio.paInt16, channels=1, rate=samplerate, input=True, frames_per_buffer=chunk_size)
+stream.start_stream()
+
+# Asetetaan komennot joita äänentunnisus kuuntelee ja tottelee
+HAND_COMMANDS = ["magic"]
+EXIT_COMMANDS = ["stop", "exit"]
+
+
+# Debug Function
+def debug_log(message):
+    if DEBUG_MODE:
+        print(f"[DEBUG] {message}")
+
+# Servon liikkeet
+
+
+
+def set_angle(angle):
+    servo.angle = angle
+    time.sleep(0.02)
+
+
+def move_slow(start, end, step=1, delay=0.02):
+    debug_log(f"Move {start} -> {end}")
+
+    if start < end:
+        angles = range(start, end + 1, step)
+    else:
+        angles = range(start, end - 1, -step)
+
+    for angle in angles:
+        set_angle(angle)
+        time.sleep(delay)
+
+
+def smooth_move():
+    debug_log("Liike alkaa")
+
+    move_slow(90, 120)
+    time.sleep(0.3)
+
+    move_slow(120, 60)
+    time.sleep(0.3)
+
+    move_slow(60, 90)
+    time.sleep(0.3)
+
+    debug_log("Liike valmis")
+
+# Äänen muuttaminen tekstiksi ja komentojen tunnistaminen
+def get_command():
+    with mic as source:
+        if DEBUG_MODE:
+            print("[DEBUG] Listening for command...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+    try:
+        command = recognizer.recognize_sphinx(audio).lower()  # offline
+        if DEBUG_MODE:
+            print(f"[DEBUG] Detected Command: {command}")
+        return command
+    except sr.UnknownValueError:
+        return ""
+    except sr.RequestError as e:
+        print(f"[ERROR] Recognition failed; {e}")
+        return ""
+
+# Chekkaa että alkuasento on 90 astetta
+debug_log("Asetetaan alkuasento")
+set_angle(90)
+time.sleep(0.5)
+
+
+
+while True:
+    command = get_command()
+
+    if not command:
+        continue
+
+# Jos tunnistaa komentosanan lopettamiselle, niin tämä (kuunteleminen loppuu)
+    if any(word in command for word in EXIT_COMMANDS):
+        break
+# Jos tunnistaa komentosanan liikkeelle, niin tämä
+    elif any(word in command for word in HAND_COMMANDS):
+        smooth_move()
+        time.sleep(0.5)
+        debug_log("Valmis")
+
+# Cleanup
+stream.stop_stream()
+stream.close()
+p.terminate()
+servo.close()
